@@ -25,11 +25,12 @@ int main() {
     SetTargetFPS(10);
 
     Snake snake;
-    snake.body.push_back({ 0.0f, 0.0f });
+    snake.body.push_back({ screenWidth / 2, screenHeight / 2 });
 
     Vector2 food = { static_cast<float>(5 * cellSize), static_cast<float>(5 * cellSize) };
 
     while (!WindowShouldClose()) {
+        if (!gameOver) {
         // Input
         if (IsKeyPressed(KEY_UP) && snake.dir != DOWN) snake.dir = UP;
         if (IsKeyPressed(KEY_DOWN) && snake.dir != UP) snake.dir = DOWN;
@@ -52,8 +53,8 @@ int main() {
         if (snake.body[0].x == food.x && snake.body[0].y == food.y) {
             snake.grew = true;
             food = {
-                static_cast<float>(GetRandomValue(0, (screenWidth / cellSize) - 1) * cellSize),
-                static_cast<float>(GetRandomValue(0, (screenHeight / cellSize) - 1) * cellSize)
+                    static_cast<float>(GetRandomValue(1, (screenWidth / cellSize) - 2) * cellSize),
+                    static_cast<float>(GetRandomValue(1, (screenHeight / cellSize) - 2) * cellSize)
             };
         }
 
@@ -64,26 +65,51 @@ int main() {
             snake.grew = false;
         }
 
+            // Wall Collision
+            if (snake.body[0].x < 0 || snake.body[0].x >= screenWidth ||
+                snake.body[0].y < 0 || snake.body[0].y >= screenHeight) {
+                gameOver = true;
+            }
+
         // Self collision
         for (size_t i = 1; i < snake.body.size(); i++) {
             if (snake.body[0].x == snake.body[i].x && snake.body[0].y == snake.body[i].y) {
-                // Restart
-                snake.body.clear();
-                snake.body.push_back({ 0.0f, 0.0f });
-                snake.dir = RIGHT;
-                food = { static_cast<float>(5 * cellSize), static_cast<float>(5 * cellSize) };
+                    gameOver = true;
+                    break;
+                }
             }
         }
+        else if (IsKeyPressed(KEY_ENTER)) {
+            // Reset the game
+                snake.body.clear();
+            snake.body.push_back({ screenWidth / 2, screenHeight / 2 });
+                snake.dir = RIGHT;
+            score = 0;
+            gameOver = false;
+            food = {
+                static_cast<float>(GetRandomValue(1, (screenWidth / cellSize) - 2) * cellSize),
+                static_cast<float>(GetRandomValue(1, (screenHeight / cellSize) - 2) * cellSize)
+            };
+            }
 
         // Draw everything
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
+        if (!gameOver) {
+            // Drawing
         for (auto& segment : snake.body) {
             DrawRectangle(static_cast<int>(segment.x), static_cast<int>(segment.y), cellSize, cellSize, DARKGREEN);
         }
 
         DrawRectangle(static_cast<int>(food.x), static_cast<int>(food.y), cellSize, cellSize, RED);
+            DrawRectangleLines(0, 0, screenWidth, screenHeight, DARKBLUE); // Draw Walls
+            DrawText(TextFormat("Score: %d", score), 10, 10, 20, DARKGRAY); // Draw score
+        }
+        else {
+            DrawText("GAME OVER", screenWidth / 2 - MeasureText("GAME OVER", 30) / 2, screenHeight / 2 - 30, 30, RED);
+            DrawText("Press ENTER to Restart", screenWidth / 2 - MeasureText("Press ENTER to Restart", 20) / 2, screenHeight / 2, 20, DARKGRAY);
+        }
 
         EndDrawing();
     }
