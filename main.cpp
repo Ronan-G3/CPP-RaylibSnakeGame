@@ -1,13 +1,18 @@
 #include "raylib.h"
 #include <vector>
 
-const int cellSize = 60;
+const int cellSize = 20;
 const int screenWidth = 800;
 const int screenHeight = 600;
 
 enum Direction {
     UP, DOWN, LEFT, RIGHT
 };
+
+// Score
+int score = 0;
+bool gameOver = false;
+
 
 struct Snake {
     Direction dir = RIGHT;
